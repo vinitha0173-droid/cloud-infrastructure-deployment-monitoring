@@ -1,8 +1,10 @@
-from flask import Flask, jsonify
+
+from flask import Flask, jsonify, request
 from prometheus_client import Counter, Gauge, generate_latest
 from prometheus_client import CONTENT_TYPE_LATEST
 from datetime import datetime
 import os
+import hmac
 
 app = Flask(__name__)
 
@@ -17,8 +19,9 @@ APP_UPTIME = Gauge(
 )
 
 START_TIME = datetime.now()
-
 APP_UPTIME.set(1)
+
+METRICS_TOKEN = os.environ.get("METRICS_TOKEN", "")
 
 
 @app.route("/")
@@ -42,6 +45,15 @@ def health():
 
 @app.route("/metrics")
 def metrics():
+    if not METRICS_TOKEN:
+        return jsonify({"error": "Metrics authentication not configured"}), 503
+
+    auth_header = request.headers.get("Authorization", "")
+    expected = "Bearer " + METRICS_TOKEN
+
+    if not hmac.compare_digest(auth_header, expected):
+        return jsonify({"error": "Unauthorized"}), 401
+
     REQUEST_COUNT.inc()
     return generate_latest(), 200, {
         "Content-Type": CONTENT_TYPE_LATEST
