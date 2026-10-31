@@ -1,120 +1,165 @@
-
 # Cloud Infrastructure Deployment & Monitoring Capstone
 
 ## Project Overview
 
-CloudMonitor is a containerized Python application deployed using Render with monitoring support through Prometheus and Grafana.
+**CloudMonitor** is a containerized Flask application deployed on Render and monitored using Grafana Cloud.
 
-The project demonstrates cloud deployment, Docker containerization, application health checks, metrics collection, and monitoring dashboards.
+This project demonstrates cloud application deployment, containerization, health monitoring, Prometheus metrics collection, and email alert notifications.
+
+## Live Application
+
+- **Application URL:** https://cloud-infrastructure-deployment.onrender.com
+- **Health Check:** https://cloud-infrastructure-deployment.onrender.com/health
+- **Application Status:** Live and Healthy
 
 ## Technologies Used
 
-- Python
+- Python 3.11
 - Flask
 - Docker
-- Docker Compose
 - Render
 - Prometheus
-- Grafana
+- Grafana Cloud
+- GitHub
 
-## Project Architecture
+## Project Structure
 
-User
-  |
-  v
-Render Cloud Platform
-  |
-  v
-Docker Container
-  |
-  v
-Flask Application
-  |
-  +---- /health
-  |
-  +---- /metrics
-  |
-  +---- /info
-
-Monitoring:
-Prometheus ---> Grafana Dashboard
+```text
+cloud-infrastructure-deployment-monitoring/
+│
+├── main.py
+├── requirements.txt
+├── Dockerfile
+├── .dockerignore
+├── render.yaml
+├── prometheus.yml
+├── docker-compose.yml
+│
+├── grafana/
+│   ├── provisioning/
+│   │   ├── datasources/
+│   │   │   └── prometheus.yml
+│   │   └── dashboards/
+│   │       └── dashboard.yml
+│   │
+│   └── dashboards/
+│       └── cloud-monitoring-dashboard.json
+│
+└── README.md
+```
 
 ## Application Endpoints
 
 | Endpoint | Description |
-|----------|-------------|
-| / | Application home |
-| /health | Health check |
-| /metrics | Prometheus metrics |
-| /info | Application information |
+|---|---|
+| `/` | Application status and information |
+| `/health` | Health check endpoint |
+| `/metrics` | Prometheus metrics (Bearer authentication required) |
+| `/info` | Application uptime information |
 
-## Docker Setup
+## Deployment
+
+The application is containerized using Docker and deployed on Render.
+
+Deployment configuration is maintained in `render.yaml`.
+
+### Deployment URL
+
+https://cloud-infrastructure-deployment.onrender.com
+
+## Monitoring and Observability
+
+Grafana Cloud is used to monitor the deployed application.
+
+Prometheus metrics are collected through a Grafana Cloud Metrics Endpoint scrape job.
+
+**Configured monitoring:**
+- Application status monitoring
+- Total application request counter
+- Metrics scraping at one-minute intervals
+- Bearer token authentication
+- Grafana dashboard visualization
+- Email alert notifications
+
+### Grafana Dashboard
+
+Dashboard name: **CloudMonitor Dashboard 2**
+
+Configured panels:
+
+1. Application Status (`app_status`)
+2. Total Requests (`app_requests_total`)
+
+### Alert Configuration
+
+Alert rule: `CloudMonitor App Status Alert`
+
+- Metric: `app_status`
+- Condition: Below 1
+- Evaluation interval: 1 minute
+- Pending period: 1 minute
+- Notification: Email
+
+The alert is currently in **Normal** state because the application is healthy.
+
+Email contact point testing was successful.
+
+## Security
+
+- Metrics endpoint protected using Bearer token authentication.
+- Authentication token stored as an environment variable.
+- Secrets must not be committed to the GitHub repository.
+- Render and Grafana use the same updated metrics token.
+
+## Running Locally
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/vinitha0173-droid/cloud-infrastructure-deployment-monitoring.git
+cd cloud-infrastructure-deployment-monitoring
+```
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure environment variable
+
+Set a secure `METRICS_TOKEN` environment variable before starting the application.
+
+### 4. Run the application
+
+```bash
+python main.py
+```
+
+Application runs locally on port 5000 by default.
+
+## Docker
 
 Build the Docker image:
 
+```bash
 docker build -t cloudmonitor .
+```
 
-Run the application:
+Run the container:
 
-docker run -p 5000:5000 cloudmonitor
+```bash
+docker run -p 10000:10000 -e PORT=10000 -e METRICS_TOKEN=your_secure_token cloudmonitor
+```
 
-## Docker Compose
+## Project Outcome
 
-Start all monitoring services:
+Successfully deployed a containerized Flask application on Render and configured Grafana Cloud monitoring with Prometheus metrics, dashboard visualizations, and email alert notifications.
 
-docker compose up -d --build
-
-Services:
-
-- Application: http://localhost:5000
-- Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000
-
-## Grafana Configuration
-
-Grafana is configured with Prometheus as its data source.
-
-The dashboard displays:
-
-- Application health
-- Total HTTP requests
-- HTTP request rate
-
-Default local Grafana login:
-
-Username: admin
-Password: admin
-
-Change the default password after first login.
-
-## Cloud Deployment
-
-The application is configured for deployment using Render.
-
-Deployment steps:
-
-1. Connect the GitHub repository to Render.
-2. Select Docker as the runtime.
-3. Select the Free instance plan.
-4. Configure environment variables.
-5. Deploy the application.
-6. Verify the live application using the health endpoint.
-
-## Monitoring
-
-Prometheus collects application metrics.
-
-Grafana Cloud provides hosted dashboards, metrics visualization, and alerting.
-
-## Expected Outcome
-
-- Dockerized application
-- Cloud deployment
-- Public application endpoint
-- Application health monitoring
-- Prometheus metrics
-- Grafana monitoring dashboard
+The project demonstrates a basic end-to-end cloud deployment and monitoring workflow.
 
 ## Author
 
-Vinitha
+**Vinitha K**
+
+GitHub: https://github.com/vinitha0173-droid
